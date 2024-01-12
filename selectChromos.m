@@ -1,4 +1,47 @@
 % %选择操作：输入一个种群，得到一个新种群
+function outChromos = selectChromos(inChromos, popu, changeData, workpieceNum, machNum,fitness)
+    roulette = zeros(popu, 5);
+    % fitness = calcFitness(inChromos, popu, changeData, workpieceNum, machNum);
+    global thisAGVCmax;
+    global thisMinCmax;
+    thisAGVCmax=mean(fitness);
+    thisMinCmax=min(fitness);
+    
+    % 适应度缩放
+    scaledFitness = 1 ./ (fitness + min(fitness));
+    
+    roulette(:, 2) = fitness; % 适应度
+    roulette(:, 1) = 1:popu; % 伪指针
+    roulette(:, 3) = scaledFitness *1; % 伪适应度，可以根据问题的特性调整缩放参数
+    sumFitness = sum(roulette(:, 3)); % 伪适应度之和
+    roulette(:, 4) = roulette(:, 3) / sumFitness;
+    roulette(1, 5) = roulette(1, 4);
+    roulette(:, 5) = cumsum(roulette(:, 4));
+
+    % 使用 rand 一次性生成所有的指针
+    pointers = rand(1, popu);
+
+    % 使用 histcounts 进行选择
+    [~, ~, idx] = histcounts(pointers, [0; roulette(:, 5)]);
+
+    % 精英选择，将上一代中的最优两个个体直接复制到下一代中
+    [~, eliteIdx] = sort(fitness);
+    eliteCount = round(popu/20); % 保留最优的几个个体
+    eliteChromos = inChromos(eliteIdx(1:eliteCount), :);
+    
+    % 遗传下去，除了精英个体外的其他个体
+    outChromos = inChromos(roulette(idx, 1), :);
+    
+    % 将精英个体插入到新种群中
+    outChromos(end - eliteCount + 1:end, :) = eliteChromos;
+end
+
+
+
+
+
+
+% %选择操作：输入一个种群，得到一个新种群
 % function outChromos = selectChromos(inChromos,popu,changeData,workpieceNum,machNum)
 %     outChromos=zeros(popu,workpieceNum*machNum);
 %     roulette=zeros(popu,5);
@@ -135,40 +178,40 @@
 %     outChromos(end-eliteCount+1:end, :) = eliteChromos;
 % end
 
-function outChromos = selectChromos(inChromos, popu, changeData, workpieceNum, machNum)
-    roulette = zeros(popu, 5);
-    fitness = calcFitness(inChromos, popu, changeData, workpieceNum, machNum);
-    global thisAGVCmax;
-    global thisMinCmax;
-    thisAGVCmax=mean(fitness);
-    thisMinCmax=min(fitness);
-    
-    % 适应度缩放
-    scaledFitness = 1 ./ (fitness + min(fitness));
-    
-    roulette(:, 2) = fitness; % 适应度
-    roulette(:, 1) = 1:popu; % 伪指针
-    roulette(:, 3) = scaledFitness * 3; % 伪适应度，可以根据问题的特性调整缩放参数
-    sumFitness = sum(roulette(:, 3)); % 伪适应度之和
-    roulette(:, 4) = roulette(:, 3) / sumFitness;
-    roulette(1, 5) = roulette(1, 4);
-    roulette(:, 5) = cumsum(roulette(:, 4));
-
-    % 使用 rand 一次性生成所有的指针
-    pointers = rand(1, popu);
-
-    % 使用 histcounts 进行选择
-    [~, ~, idx] = histcounts(pointers, [0; roulette(:, 5)]);
-
-    % 精英选择，将上一代中的最优两个个体直接复制到下一代中
-    [~, eliteIdx] = sort(fitness);
-    eliteCount = round(popu / 5); % 保留最优的几个个体
-    eliteChromos = inChromos(eliteIdx(1:eliteCount), :);
-    
-    % 遗传下去，除了精英个体外的其他个体
-    outChromos = inChromos(roulette(idx, 1), :);
-    
-    % 将精英个体插入到新种群中
-    outChromos(end - eliteCount + 1:end, :) = eliteChromos;
-end
+% function outChromos = selectChromos(inChromos, popu, changeData, workpieceNum, machNum)
+%     roulette = zeros(popu, 5);
+%     fitness = calcFitness(inChromos, popu, changeData, workpieceNum, machNum);
+%     global thisAGVCmax;
+%     global thisMinCmax;
+%     thisAGVCmax=mean(fitness);
+%     thisMinCmax=min(fitness);
+% 
+%     % 适应度缩放
+%     scaledFitness = 1 ./ (fitness + min(fitness));
+% 
+%     roulette(:, 2) = fitness; % 适应度
+%     roulette(:, 1) = 1:popu; % 伪指针
+%     roulette(:, 3) = scaledFitness *1; % 伪适应度，可以根据问题的特性调整缩放参数
+%     sumFitness = sum(roulette(:, 3)); % 伪适应度之和
+%     roulette(:, 4) = roulette(:, 3) / sumFitness;
+%     roulette(1, 5) = roulette(1, 4);
+%     roulette(:, 5) = cumsum(roulette(:, 4));
+% 
+%     % 使用 rand 一次性生成所有的指针
+%     pointers = rand(1, popu);
+% 
+%     % 使用 histcounts 进行选择
+%     [~, ~, idx] = histcounts(pointers, [0; roulette(:, 5)]);
+% 
+%     % 精英选择，将上一代中的最优两个个体直接复制到下一代中
+%     [~, eliteIdx] = sort(fitness);
+%     eliteCount = round(popu/20); % 保留最优的几个个体
+%     eliteChromos = inChromos(eliteIdx(1:eliteCount), :);
+% 
+%     % 遗传下去，除了精英个体外的其他个体
+%     outChromos = inChromos(roulette(idx, 1), :);
+% 
+%     % 将精英个体插入到新种群中
+%     outChromos(end - eliteCount + 1:end, :) = eliteChromos;
+% end
 

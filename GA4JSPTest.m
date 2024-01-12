@@ -1,5 +1,3 @@
-%% this is GA for JSP v0.100 and test in FT10 %%
-
 %主程序
 %function GA4JSPTest()
 %%%%%%%%%%系数%%%%%%%%%%%%%

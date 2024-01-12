@@ -1,7 +1,14 @@
-%逆解码，生成一个反向序列
-%以Cmax为基准生成
-% 工件ID 工件工序ID 机器ID 开始时间 结束时间
-function schedule2=createFlipSchedule(changeData,chromo,workpieceNum,machNum,Cmax)
+% %逆解码，生成一个反向序列
+% %以Cmax为基准生成
+% % 工件ID 工件工序ID 机器ID 开始时间 结束时间
+ function schedule2=createFlipSchedule(changeData,chromo,workpieceNum,machNum,Cmax)
+ %    flippedChangeDataStep1 = flip(changeData, 2);
+ %    numCols = size(flippedChangeDataStep1, 2);
+ %    flippedChangeData(:, 1:2:numCols) = flippedChangeDataStep1(:, 2:2:numCols);
+ %    flippedChangeData(:, 2:2:numCols) = flippedChangeDataStep1(:, 1:2:numCols);
+ %    flipChromo=flip(chromo);
+ %    schedule2=createSchedule(changeData,chromo,workpieceNum,machNum);
+ % end
     lengthChromo=size(chromo,2);
     schedule2=zeros(lengthChromo,5);
     workpieceProcessId(1,1:workpieceNum)=machNum;
@@ -17,13 +24,13 @@ function schedule2=createFlipSchedule(changeData,chromo,workpieceNum,machNum,Cma
             % workpieceEndTime=Cmax;
             % workpieceStartTime=Cmax-workpieceSpeedTime;
             % isInsert=1;
-            if workpieceProcessId(1,workpieceId)==machNum %is the end process
+            if workpieceProcessId(1,workpieceId)==machNum %这是改工件的最后一道工序，直接从Cmax开始安排
                 workpieceEndTime=Cmax;
                 workpieceStartTime=Cmax-workpieceSpeedTime;
                 isInsert=1;
-            else %not the end,put it in the next's top
-                workPieceEndTime=workpieceCanEndTime(1,workpieceId);
-                workpieceStartTime=Cmax-workpieceSpeedTime;
+            else %如果不是的话，从工件的下道工序开始时间安排
+                workpieceEndTime=workpieceCanEndTime(1,workpieceId);
+                workpieceStartTime=workpieceEndTime-workpieceSpeedTime;  %%%%%%%workpieceStartTime=Cmax-workpieceSpeedTime   15点23分
                 isInsert=1;
             end
         else
@@ -68,7 +75,7 @@ function schedule2=createFlipSchedule(changeData,chromo,workpieceNum,machNum,Cma
         workpieceCanEndTime(workpieceId)=workpieceStartTime;%更新开始时间表
         schedule2(i,:)=[workpieceId,workpieceProcessId(workpieceId),machId,workpieceStartTime,workpieceEndTime];
         workpieceProcessId(workpieceId)=workpieceProcessId(workpieceId)-1;
-        
+
     end
 
 
@@ -105,5 +112,5 @@ function schedule2=createFlipSchedule(changeData,chromo,workpieceNum,machNum,Cma
     %     end
     % end
 
-end
-    
+% end
+% 
